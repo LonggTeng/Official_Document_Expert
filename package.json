@@ -1,0 +1,15 @@
+{
+  "name": "gov-doc-ai-agent",
+  "version": "1.0.0",
+  "description": "A simple AI agent frontend + backend for generating and polishing Chinese official documents using deepseek-reasoner.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "node-fetch": "^3.3.2",
+    "docx": "^9.0.0"
+  }
+}

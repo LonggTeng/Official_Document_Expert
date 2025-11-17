@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>政务公文 AI 助手</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="header">
+        <h1>政务公文 AI 助手</h1>
+        <p class="subtitle">
+          基于 deepseek-reasoner，支持公文润色与规范生成（通知/请示/报告等）
+        </p>
+      </header>
+
+      <main class="main">
+        <section class="controls">
+          <div class="field">
+            <label for="mode">处理模式</label>
+            <select id="mode">
+              <option value="auto">自动判断</option>
+              <option value="润色模式">仅润色/改写</option>
+              <option value="公文生成模式">按要点生成公文</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="docType">文种</label>
+            <select id="docType">
+              <option value="auto">自动识别</option>
+            </select>
+          </div>
+        </section>
+
+        <section class="io">
+          <div class="field">
+            <label>对话</label>
+            <div id="chat" class="chat"></div>
+          </div>
+
+          <div class="field">
+            <label for="userInput">输入内容 / 要点</label>
+            <textarea
+              id="userInput"
+              rows="10"
+              placeholder="示例：&#10;- 需要给各业务部门下发通知，要求4月1日至4月15日开展平台内容合规自查；&#10;- 说明监管背景、工作范围、时间安排、报送要求等；&#10;- 指定联系人及联系电话。"
+            ></textarea>
+          </div>
+
+          <div class="actions">
+            <button id="submitBtn">生成公文</button>
+            <button id="downloadBtn" type="button" disabled>下载 Word</button>
+            <button id="clearBtn" type="button">清空对话</button>
+            <span id="status" class="status"></span>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,225 @@
+{
+  "通知": {
+    "type": "object",
+    "required": [
+      "doc_type",
+      "title",
+      "issuer",
+      "recipients",
+      "background",
+      "work_items",
+      "requirements",
+      "contact_person",
+      "contact_phone"
+    ],
+    "properties": {
+      "doc_type": {
+        "type": "string",
+        "const": "通知",
+        "description": "文种，固定为“通知”"
+      },
+      "title": {
+        "type": "string",
+        "description": "标题，如“关于开展XXXX工作的通知”"
+      },
+      "issuer": {
+        "type": "string",
+        "description": "发文部门/单位全称，如“XX公司信息合规管理部”"
+      },
+      "recipients": {
+        "type": "string",
+        "description": "主送对象，如“各业务部门、各产品线”"
+      },
+      "cc_list": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "抄送对象列表，可为空"
+      },
+      "background": {
+        "type": "string",
+        "description": "发文背景和目的，可包含监管要求、风险情况等"
+      },
+      "policy_basis": {
+        "type": "string",
+        "description": "依据的上级文件或政策名称，如某某通知或办法"
+      },
+      "time_range": {
+        "type": "string",
+        "description": "工作起止时间，如“2025年4月1日至4月15日”"
+      },
+      "scope": {
+        "type": "string",
+        "description": "工作范围/对象，如“存量信息内容、重点栏目、算法推荐等”"
+      },
+      "work_items": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "主要工作内容列表，每项为一句概括说明"
+      },
+      "requirements": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "工作要求列表，如“提高认识、认真自查、按时报送材料”等"
+      },
+      "materials_to_submit": {
+        "type": "string",
+        "description": "需报送的材料及截止时间说明"
+      },
+      "contact_person": {
+        "type": "string",
+        "description": "联系人姓名"
+      },
+      "contact_phone": {
+        "type": "string",
+        "description": "联系人电话"
+      },
+      "attachments": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "附件名称列表，如“自查报告”“问题台账”等"
+      },
+      "issue_date": {
+        "type": "string",
+        "description": "成文日期，如“2025年3月25日”"
+      }
+    }
+  },
+  "请示": {
+    "type": "object",
+    "required": [
+      "doc_type",
+      "title",
+      "requesting_unit",
+      "addressee",
+      "reason_background",
+      "request_items"
+    ],
+    "properties": {
+      "doc_type": {
+        "type": "string",
+        "const": "请示",
+        "description": "文种，固定为“请示”"
+      },
+      "title": {
+        "type": "string",
+        "description": "标题，如“关于举办XXXX培训班的请示”"
+      },
+      "requesting_unit": {
+        "type": "string",
+        "description": "请示单位/部门名称"
+      },
+      "addressee": {
+        "type": "string",
+        "description": "主送机关，如“市网信办”“集团公司办公室”"
+      },
+      "reason_background": {
+        "type": "string",
+        "description": "提出请示的背景和事由（问题、需求、监管要求等）"
+      },
+      "basis": {
+        "type": "string",
+        "description": "请示依据的政策、文件、领导指示等"
+      },
+      "current_situation": {
+        "type": "string",
+        "description": "当前相关工作开展情况或存在问题简介"
+      },
+      "request_items": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "具体请示事项列表（希望批准/同意/协调的内容）"
+      },
+      "expected_effect": {
+        "type": "string",
+        "description": "如获批准后预期达到的效果或意义"
+      },
+      "prior_communication": {
+        "type": "string",
+        "description": "与相关部门或领导之前沟通情况（如有）"
+      },
+      "attachments": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "随文报送的方案、预算、清单等附件名称"
+      },
+      "issue_date": {
+        "type": "string",
+        "description": "成文日期，如“2025年3月5日”"
+      }
+    }
+  },
+  "报告": {
+    "type": "object",
+    "required": [
+      "doc_type",
+      "title",
+      "reporting_unit",
+      "addressee",
+      "work_background",
+      "measures",
+      "results"
+    ],
+    "properties": {
+      "doc_type": {
+        "type": "string",
+        "const": "报告",
+        "description": "文种，固定为“报告”"
+      },
+      "title": {
+        "type": "string",
+        "description": "标题，如“关于平台信息内容合规自查整改情况的报告”"
+      },
+      "reporting_unit": {
+        "type": "string",
+        "description": "报告单位/部门名称"
+      },
+      "addressee": {
+        "type": "string",
+        "description": "主送机关，如“市网信办”“集团公司办公室”"
+      },
+      "time_range": {
+        "type": "string",
+        "description": "工作时间范围，如“2025年4月1日至4月15日”"
+      },
+      "work_background": {
+        "type": "string",
+        "description": "工作缘起和依据，如根据某通知或监管要求开展的工作"
+      },
+      "overall_arrangement": {
+        "type": "string",
+        "description": "整体组织安排，如成立专班、明确分工等"
+      },
+      "measures": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "主要工作措施列表，如排查整改、优化制度、加强技术手段等"
+      },
+      "results": {
+        "type": "string",
+        "description": "取得的主要成效，可包括定量数据和管理成效"
+      },
+      "problems": {
+        "type": "string",
+        "description": "目前存在的主要问题和短板"
+      },
+      "next_steps": {
+        "type": "string",
+        "description": "下一步工作安排和计划"
+      },
+      "suggestions_to_superior": {
+        "type": "string",
+        "description": "需要上级部门支持协调或指导的事项（如有）"
+      },
+      "attachments": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "附件名称，如“自查问题台账”“统计表”等"
+      },
+      "issue_date": {
+        "type": "string",
+        "description": "成文日期，如“2025年4月20日”"
+      }
+    }
+  }
+}
+
