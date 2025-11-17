@@ -1,64 +1,315 @@
-<!doctype html>
+
+
+
+<!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>政务公文 AI 助手</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <div class="app">
-      <header class="header">
-        <h1>政务公文 AI 助手</h1>
-        <p class="subtitle">
-          基于 deepseek-reasoner，支持公文润色与规范生成（通知/请示/报告等）
-        </p>
-      </header>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>公文小秘 AI Agent</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
 
-      <main class="main">
-        <section class="controls">
-          <div class="field">
-            <label for="mode">处理模式</label>
-            <select id="mode">
-              <option value="auto">自动判断</option>
-              <option value="润色模式">仅润色/改写</option>
-              <option value="公文生成模式">按要点生成公文</option>
-            </select>
-          </div>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 min-h-screen">
+    <!-- 顶部导航栏 -->
+    <nav class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-briefcase text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-800">商务问答aAgent</h1>
+                        <p class="text-xs text-gray-500">专业商务助手</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div id="userInfo" class="hidden items-center space-x-3">
+                        <div class="text-right">
+                            <p id="userName" class="text-sm font-medium text-gray-700"></p>
+                            <p id="userDept" class="text-xs text-gray-500"></p>
+                        </div>
+                        <img id="userAvatar" class="w-10 h-10 rounded-full border-2 border-indigo-200" alt="用户头像">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-          <div class="field">
-            <label for="docType">文种</label>
-            <select id="docType">
-              <option value="auto">自动识别</option>
-            </select>
-          </div>
-        </section>
+    <!-- 主内容区 -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- 功能选择卡片 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="feature-card active" data-feature="qa">
+                <div class="flex items-center space-x-4">
+                    <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <i class="fas fa-comments text-white text-2xl"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-xl font-bold text-gray-800">商务问答</h3>
+                        <p class="text-sm text-gray-600 mt-1">符合商务礼仪的专业问答助手</p>
+                    </div>
+                    <i class="fas fa-check-circle text-blue-600 text-2xl check-icon"></i>
+                </div>
+            </div>
+            <div class="feature-card" data-feature="document">
+                <div class="flex items-center space-x-4">
+                    <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <i class="fas fa-file-alt text-white text-2xl"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-xl font-bold text-gray-800">公文生成</h3>
+                        <p class="text-sm text-gray-600 mt-1">一键生成符合格式的公文文件</p>
+                    </div>
+                    <i class="fas fa-check-circle text-gray-300 text-2xl check-icon"></i>
+                </div>
+            </div>
+        </div>
 
-        <section class="io">
-          <div class="field">
-            <label>对话</label>
-            <div id="chat" class="chat"></div>
-          </div>
+        <!-- 商务问答模块 -->
+        <div id="qaModule" class="module-content">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- 左侧：输入区 -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-2xl shadow-xl p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-2xl font-bold text-gray-800">
+                                <i class="fas fa-pen-fancy text-blue-600 mr-2"></i>
+                                提出您的问题
+                            </h2>
+                            <button id="clearQA" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-all duration-300 text-sm">
+                                <i class="fas fa-eraser mr-2"></i>清空
+                            </button>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">问题类型</label>
+                                <select id="qaType" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                                    <option value="greeting">商务问候</option>
+                                    <option value="request">请求协助</option>
+                                    <option value="apology">致歉说明</option>
+                                    <option value="thanks">感谢表达</option>
+                                    <option value="invitation">邀请函</option>
+                                    <option value="notification">通知事项</option>
+                                    <option value="inquiry">业务咨询</option>
+                                    <option value="response">回复函件</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">您的问题或内容</label>
+                                <textarea id="qaInput" rows="8" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none" placeholder="请输入您想要表达的内容，我们将为您转换为符合商务礼仪的专业表述..."></textarea>
+                            </div>
+                            
+                            <div class="flex items-center space-x-4">
+                                <button id="generateQA" class="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                                    <i class="fas fa-magic mr-2"></i>生成商务表述
+                                </button>
+                                <button id="copyQA" class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-all duration-300">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-          <div class="field">
-            <label for="userInput">输入内容 / 要点</label>
-            <textarea
-              id="userInput"
-              rows="10"
-              placeholder="示例：&#10;- 需要给各业务部门下发通知，要求4月1日至4月15日开展平台内容合规自查；&#10;- 说明监管背景、工作范围、时间安排、报送要求等；&#10;- 指定联系人及联系电话。"
-            ></textarea>
-          </div>
+                <!-- 右侧：输出区 -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-2xl shadow-xl p-6 sticky top-24">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">
+                            <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>
+                            商务表述建议
+                        </h3>
+                        <div id="qaOutput" class="prose prose-sm max-w-none">
+                            <div class="text-center py-12 text-gray-400">
+                                <i class="fas fa-comment-dots text-5xl mb-4"></i>
+                                <p>输入内容后点击生成按钮</p>
+                                <p class="text-xs mt-2">我们将为您提供专业的商务表述</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-          <div class="actions">
-            <button id="submitBtn">生成公文</button>
-            <button id="downloadBtn" type="button" disabled>下载 Word</button>
-            <button id="clearBtn" type="button">清空对话</button>
-            <span id="status" class="status"></span>
-          </div>
-        </section>
-      </main>
+        
+        </div>
+
+        <!-- 公文生成模块 -->
+        <div id="documentModule" class="module-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- 左侧：模板选择和输入 -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-2xl shadow-xl p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-2xl font-bold text-gray-800">
+                                <i class="fas fa-file-signature text-indigo-600 mr-2"></i>
+                                公文生成器
+                            </h2>
+                            <button id="clearDoc" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-all duration-300 text-sm">
+                                <i class="fas fa-eraser mr-2"></i>清空
+                            </button>
+                        </div>
+
+                        <!-- 公文模板选择 -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-3">选择公文类型</label>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <div class="doc-template active" data-template="notice">
+                                    <i class="fas fa-bullhorn text-xl mb-2"></i>
+                                    <span class="text-sm font-medium">通知</span>
+                                </div>
+                                <div class="doc-template" data-template="report">
+                                    <i class="fas fa-chart-line text-xl mb-2"></i>
+                                    <span class="text-sm font-medium">报告</span>
+                                </div>
+                                <div class="doc-template" data-template="request">
+                                    <i class="fas fa-file-invoice text-xl mb-2"></i>
+                                    <span class="text-sm font-medium">请示</span>
+                                </div>
+                                <div class="doc-template" data-template="reply">
+                                    <i class="fas fa-reply text-xl mb-2"></i>
+                                    <span class="text-sm font-medium">批复</span>
+                                </div>
+                                <div class="doc-template" data-template="decision">
+                                    <i class="fas fa-gavel text-xl mb-2"></i>
+                                    <span class="text-sm font-medium">决定</span>
+                                </div>
+                                <div class="doc-template" data-template="opinion">
+                                    <i class="fas fa-comments text-xl mb-2"></i>
+                                    <span class="text-sm font-medium">意见</span>
+                                </div>
+                                <div class="doc-template" data-template="letter">
+                                    <i class="fas fa-envelope text-xl mb-2"></i>
+                                    <span class="text-sm font-medium">函</span>
+                                </div>
+                                <div class="doc-template" data-template="minutes">
+                                    <i class="fas fa-clipboard-list text-xl mb-2"></i>
+                                    <span class="text-sm font-medium">纪要</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 公文信息输入 -->
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">发文单位</label>
+                                    <input type="text" id="docIssuer" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="例：XX部门">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">收文单位</label>
+                                    <input type="text" id="docReceiver" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="例：各相关部门">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">公文标题</label>
+                                <input type="text" id="docTitle" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="请输入公文标题">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">正文内容</label>
+                                <textarea id="docContent" rows="10" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none" placeholder="请输入公文正文内容要点，系统将自动格式化为标准公文格式..."></textarea>
+                            </div>
+
+                            <div class="flex items-center space-x-4">
+                                <button id="generateDoc" class="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                                    <i class="fas fa-file-export mr-2"></i>生成公文
+                                </button>
+                                <button id="downloadDoc" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-300">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                                <button id="copyDoc" class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-all duration-300">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧：预览区 -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-2xl shadow-xl p-6 sticky top-24">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">
+                            <i class="fas fa-eye text-indigo-600 mr-2"></i>
+                            公文预览
+                        </h3>
+                        <div id="docOutput" class="document-preview">
+                            <div class="text-center py-12 text-gray-400">
+                                <i class="fas fa-file-alt text-5xl mb-4"></i>
+                                <p>填写信息后点击生成按钮</p>
+                                <p class="text-xs mt-2">预览标准格式的公文</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 公文模板说明 -->
+            <div class="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-all">
+                    <div class="flex items-center space-x-3 mb-2">
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-bullhorn text-blue-600"></i>
+                        </div>
+                        <h4 class="font-semibold text-gray-800">通知</h4>
+                    </div>
+                    <p class="text-xs text-gray-600">用于发布需要周知或执行的事项</p>
+                </div>
+                <div class="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-all">
+                    <div class="flex items-center space-x-3 mb-2">
+                        <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-chart-line text-indigo-600"></i>
+                        </div>
+                        <h4 class="font-semibold text-gray-800">报告</h4>
+                    </div>
+                    <p class="text-xs text-gray-600">向上级汇报工作、反映情况</p>
+                </div>
+                <div class="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-all">
+                    <div class="flex items-center space-x-3 mb-2">
+                        <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-file-invoice text-purple-600"></i>
+                        </div>
+                        <h4 class="font-semibold text-gray-800">请示</h4>
+                    </div>
+                    <p class="text-xs text-gray-600">向上级请求指示或批准</p>
+                </div>
+                <div class="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-all">
+                    <div class="flex items-center space-x-3 mb-2">
+                        <div class="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-envelope text-pink-600"></i>
+                        </div>
+                        <h4 class="font-semibold text-gray-800">函</h4>
+                    </div>
+                    <p class="text-xs text-gray-600">不相隶属机关之间商洽工作</p>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <script src="main.js"></script>
-  </body>
+    <!-- 页脚 -->
+    <footer class="bg-white border-t border-gray-200 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="text-center text-gray-600 text-sm">
+                <p class="mb-2">
+                    <i class="fas fa-shield-alt text-blue-600 mr-2"></i>
+                    商务问答Agent - 让商务沟通更专业
+                </p>
+                <p class="text-xs text-gray-500">提供符合商务礼仪的专业表述和标准公文格式</p>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module" src="main.js"></script>
+</body>
 </html>
+
+
+
+
+
+
