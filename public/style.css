@@ -32,6 +32,7 @@ body {
 
 .feature-card .check-icon {
     transition: all 0.3s ease;
+    color: #d1d5db;
 }
 
 .feature-card.active .check-icon {
@@ -130,6 +131,82 @@ body {
 
 /* 公文预览样式 */
 .document-preview {
+    background: #f9fafb;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.3);
+    height: 100%;
+}
+
+.document-preview-inner {
+    background: white;
+    border-radius: 0.75rem;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    border: 1px solid #e5e7eb;
+}
+
+.document-preview-inner h1,
+.document-preview-inner h2,
+.document-preview-inner h3 {
+    font-weight: 600;
+    color: #111827;
+}
+
+.document-preview-inner p {
+    margin-bottom: 0.75rem;
+}
+
+/* 状态提示 */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.status-badge.success {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-badge.error {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.status-badge.info {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+/* 富文本输出 */
+.prose {
+    color: #111827;
+}
+
+.prose p {
+    margin: 0.75rem 0;
+}
+
+.prose ul {
+    padding-left: 1.5rem;
+    margin: 0.75rem 0;
+}
+
+.prose li {
+    margin: 0.25rem 0;
+}
+
+.prose strong {
+    font-weight: 600;
+}
+
+/* 文本样式优化 */
+.qa-output-text, .doc-output-text {
+    color: #111827;
     font-size: 0.875rem;
     line-height: 2;
 }

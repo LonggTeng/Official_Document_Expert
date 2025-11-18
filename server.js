@@ -249,7 +249,7 @@ app.post("/api/generate-stream", async (req, res) => {
     const systemPrompt = buildSystemPrompt(input, mode, docType);
 
     const payload = {
-      model: "deepseek-reasoner",
+      model: "deepseek-chat",
       messages: [
         {
           role: "system",
@@ -422,7 +422,7 @@ app.post("/api/generate", async (req, res) => {
     const systemPrompt = buildSystemPrompt(input, mode, docType);
 
     const payload = {
-      model: "deepseek-reasoner",
+      model: "deepseek-chat",
       messages: [
         {
           role: "system",
