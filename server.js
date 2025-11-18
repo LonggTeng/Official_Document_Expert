@@ -73,6 +73,7 @@ function createStyledParagraph(kind, text) {
   let font = "仿宋_GB2312";
   let size = 32; // 三号（约 16pt）
   let bold = false;
+  let indent = undefined;
 
   if (kind === "title") {
     alignment = AlignmentType.CENTER;
@@ -85,13 +86,19 @@ function createStyledParagraph(kind, text) {
   } else if (kind === "h2") {
     font = "楷体";
     size = 32;
+    // 二级标题与正文保持一致的首行缩进
+    indent = { firstLine: "11mm" };
   } else if (kind === "signature") {
     // 落款和日期：右对齐，字号保持与正文一致
     alignment = AlignmentType.RIGHT;
+  } else if (kind === "body") {
+    // 正文段落：首行缩进约两个汉字
+    indent = { firstLine: "11mm" };
   }
 
   return new Paragraph({
     alignment,
+    indent,
     // lineRule: EXACT => 固定行距（这里为 28 磅），段前/段后各约 0.5 行
     spacing: {
       line: lineSpacing,
@@ -157,17 +164,6 @@ function buildDocFromPlainText(content) {
     const line = (raw || "").trimEnd();
 
     if (!line.trim()) {
-      paragraphs.push(
-        new Paragraph({
-          spacing: {
-            // 空行也保持 28 磅固定行距
-            line: 560,
-            lineRule: LineRuleType.EXACT,
-            before: 120,
-            after: 120,
-          },
-        })
-      );
       continue;
     }
 
@@ -185,6 +181,17 @@ function buildDocFromPlainText(content) {
       if (tag === "标题") {
         const titleText = rest || line;
         paragraphs.push(createStyledParagraph("title", titleText));
+        continue;
+      }
+
+      // 主送机关/对象：作为称呼行，不缩进
+      if (
+        tag === "主送机关" ||
+        tag === "主送对象" ||
+        tag === "主送单位"
+      ) {
+        const salutationText = rest || line;
+        paragraphs.push(createStyledParagraph("salutation", salutationText));
         continue;
       }
 
