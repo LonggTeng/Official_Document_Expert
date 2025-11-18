@@ -4,6 +4,7 @@ const path = require("path");
 const {
   AlignmentType,
   Document,
+  LineRuleType,
   Packer,
   Paragraph,
   TextRun,
@@ -62,7 +63,10 @@ async function callDeepseekChatStream(payload, apiKey) {
 }
 
 function createStyledParagraph(kind, text) {
-  const lineSpacing = 560; // 28 磅 * 20
+  // 行距：1.5 倍行距（240 * 1.5 = 360）
+  const lineSpacing = 360;
+  // 段前/段后：约 0.5 行（按 1 行 240 估算，即 120）
+  const paragraphSpacing = 120;
   let alignment = AlignmentType.JUSTIFIED;
   let font = "仿宋_GB2312";
   let size = 32; // 三号（约 16pt）
@@ -83,8 +87,13 @@ function createStyledParagraph(kind, text) {
 
   return new Paragraph({
     alignment,
-    // lineRule: "exact" => 固定行距；结合 line≈560 即约 28 磅
-    spacing: { line: lineSpacing, lineRule: "exact" },
+    // lineRule: AUTO => 多倍行距，这里为 1.5 倍行距，段前/段后各约 0.5 行
+    spacing: {
+      line: lineSpacing,
+      lineRule: LineRuleType.AUTO,
+      before: paragraphSpacing,
+      after: paragraphSpacing,
+    },
     children: [
       new TextRun({
         text: text || "",
@@ -106,7 +115,12 @@ function buildDocFromPlainText(content) {
     if (!line.trim()) {
       paragraphs.push(
         new Paragraph({
-          spacing: { line: 560, lineRule: "exact" },
+          spacing: {
+            line: 360,
+            lineRule: LineRuleType.AUTO,
+            before: 120,
+            after: 120,
+          },
         })
       );
       continue;
