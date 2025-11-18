@@ -8,6 +8,8 @@ const {
   Packer,
   Paragraph,
   TextRun,
+  Footer,
+  PageNumber,
 } = require("docx");
 
 const app = express();
@@ -63,8 +65,8 @@ async function callDeepseekChatStream(payload, apiKey) {
 }
 
 function createStyledParagraph(kind, text) {
-  // 行距：1.5 倍行距（240 * 1.5 = 360）
-  const lineSpacing = 360;
+  // 固定行距：28 磅（28 * 20 = 560）
+  const lineSpacing = 560;
   // 段前/段后：约 0.5 行（按 1 行 240 估算，即 120）
   const paragraphSpacing = 120;
   let alignment = AlignmentType.JUSTIFIED;
@@ -83,14 +85,17 @@ function createStyledParagraph(kind, text) {
   } else if (kind === "h2") {
     font = "楷体";
     size = 32;
+  } else if (kind === "signature") {
+    // 落款和日期：右对齐，字号保持与正文一致
+    alignment = AlignmentType.RIGHT;
   }
 
   return new Paragraph({
     alignment,
-    // lineRule: AUTO => 多倍行距，这里为 1.5 倍行距，段前/段后各约 0.5 行
+    // lineRule: EXACT => 固定行距（这里为 28 磅），段前/段后各约 0.5 行
     spacing: {
       line: lineSpacing,
-      lineRule: LineRuleType.AUTO,
+      lineRule: LineRuleType.EXACT,
       before: paragraphSpacing,
       after: paragraphSpacing,
     },
@@ -109,15 +114,55 @@ function buildDocFromPlainText(content) {
   const lines = String(content || "").split(/\r?\n/);
   const paragraphs = [];
 
-  for (const raw of lines) {
+   // 预先识别接近文末的“落款 + 日期”行，用于在 Word 中右对齐
+  const trimmedLines = lines.map((raw) => String(raw || "").trim());
+  const signatureLineIndices = new Set();
+
+  // 从文末向上查找形如“XXXX年XX月XX日”的日期行
+  let dateIndex = -1;
+  for (let i = trimmedLines.length - 1; i >= 0; i--) {
+    const t = trimmedLines[i];
+    if (!t) continue;
+    // 跳过附件行
+    if (/^附件[:：]/.test(t)) {
+      continue;
+    }
+    // 简单判断中文日期：同时包含“年”“月”“日”
+    if (t.includes("年") && t.includes("月") && t.includes("日")) {
+      dateIndex = i;
+      break;
+    }
+  }
+
+  if (dateIndex !== -1) {
+    signatureLineIndices.add(dateIndex);
+    // 日期上一行（非空且不含明显句子标点）视为单位名称行
+    for (let j = dateIndex - 1; j >= 0; j--) {
+      const t = trimmedLines[j];
+      if (!t) continue;
+      if (/^附件[:：]/.test(t)) {
+        break;
+      }
+      // 避免把正常句子当成落款：含句号、冒号等则停止
+      if (/[。！？?：:；;，,]/.test(t)) {
+        break;
+      }
+      signatureLineIndices.add(j);
+      break;
+    }
+  }
+
+  for (let idx = 0; idx < lines.length; idx++) {
+    const raw = lines[idx];
     const line = (raw || "").trimEnd();
 
     if (!line.trim()) {
       paragraphs.push(
         new Paragraph({
           spacing: {
-            line: 360,
-            lineRule: LineRuleType.AUTO,
+            // 空行也保持 28 磅固定行距
+            line: 560,
+            lineRule: LineRuleType.EXACT,
             before: 120,
             after: 120,
           },
@@ -145,7 +190,8 @@ function buildDocFromPlainText(content) {
 
       // 其他标签（主送机关等），去掉【】作为正文处理
       const bodyText = rest || line;
-      paragraphs.push(createStyledParagraph("body", bodyText));
+      const kind = signatureLineIndices.has(idx) ? "signature" : "body";
+      paragraphs.push(createStyledParagraph(kind, bodyText));
       continue;
     }
 
@@ -162,14 +208,40 @@ function buildDocFromPlainText(content) {
     }
 
     // 其他正文段落
-    paragraphs.push(createStyledParagraph("body", line));
+    const kind = signatureLineIndices.has(idx) ? "signature" : "body";
+    paragraphs.push(createStyledParagraph(kind, line));
   }
 
   return new Document({
     sections: [
       {
-        properties: {},
+        properties: {
+          // 页面设置：边距按毫米要求换算
+          // Word 使用缇（twip，1/20 point），1 cm ≈ 567 twip
+          page: {
+            margin: {
+              top: Math.round(3.7 * 567), // 37 mm
+              bottom: Math.round(3.5 * 567), // 35 mm
+              left: Math.round(2.8 * 567), // 28 mm
+              right: Math.round(2.6 * 567), // 26 mm
+            },
+          },
+        },
         children: paragraphs,
+        footers: {
+          default: new Footer({
+            children: [
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                children: [
+                  new TextRun({
+                    children: [PageNumber.CURRENT],
+                  }),
+                ],
+              }),
+            ],
+          }),
+        },
       },
     ],
   });
